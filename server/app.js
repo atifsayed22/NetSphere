@@ -1,0 +1,50 @@
+import dotenv from 'dotenv';
+import express from 'express';
+import mongoose from 'mongoose';
+import authRoutes from './routes/authRoutes.js'
+import postRoutes from './routes/postRoutes.js'
+import userRoutes from './routes/userRoutes.js';
+import connectionRoutes from "./routes/connectionRoutes.js";
+import cors from 'cors'
+
+import User from './models/users.js';
+import Post from './models/posts.js';
+import Comment from './models/Comments.js';
+import Connection from './models/Connection.js';
+
+const app = express();
+
+const port = 8080;
+
+dotenv.config();
+app.use(cors());
+  
+app.use(express.json())
+app.listen(port,()=>{
+    console.log('server running......')
+
+})
+
+main().then(()=>{
+
+    console.log('DB CONNECTED')
+}
+
+).catch((err)=>{
+    console.log(err)
+})
+async function main() {
+    await mongoose.connect(process.env.MONGO_DB_URL)
+
+}
+
+
+app.use('/api/auth',authRoutes)
+app.use("/api/posts", postRoutes);
+app.use('/api/user', userRoutes); 
+app.use("/api/connections", connectionRoutes);
+app.get('/', (req,res)=>{
+    res.send('Home Route  !!!!')
+
+})
+

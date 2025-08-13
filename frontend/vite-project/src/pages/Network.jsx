@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import ConnectionRequest from "../components/ConnectionRequest";
 import { Link } from "react-router-dom";
+import BASE_URL from "../config";
 
 const Network = () => {
   const [connections, setConnections] = useState([]);
@@ -17,10 +18,10 @@ const Network = () => {
         const token = localStorage.getItem("token");
 
         const [pendingRes, connectionsRes] = await Promise.all([
-          axios.get("http://localhost:8080/api/connections/pending", {
+          axios.get(`${BASE_URL}/api/connections/pending`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
-          axios.get("http://localhost:8080/api/connections", {
+          axios.get(`${BASE_URL}/api/connections`, {
             headers: { Authorization: `Bearer ${token}` },
           }),
         ]);

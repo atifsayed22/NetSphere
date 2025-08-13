@@ -2,7 +2,7 @@ import React from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { FaBriefcase } from 'react-icons/fa';
 import { FiHome, FiUsers, FiUser, FiSearch } from 'react-icons/fi';
-
+import { FaNetworkWired, FaProjectDiagram, FaShareAlt, FaSitemap, FaConnectdevelop } from "react-icons/fa";
 const Header = ({ activeTab, setActiveTab , setIsAuthenticated }) => {
   const navigate = useNavigate();
 
@@ -27,7 +27,10 @@ const Header = ({ activeTab, setActiveTab , setIsAuthenticated }) => {
           
           {/* Brand */}
           <div className="flex items-center space-x-2">
-            <span className="text-3xl"> <FaBriefcase className="text-blue-700" size={28} /></span>
+            <span className="text-3xl"> 
+            <FaNetworkWired className="text-blue-700" size={28} />    
+   
+            </span>
             <h1 className="text-2xl font-extrabold text-blue-700 tracking-tight">
               NetSphere
             </h1>

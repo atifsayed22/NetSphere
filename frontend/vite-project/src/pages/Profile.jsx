@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { FiEdit, FiMapPin, FiCalendar } from "react-icons/fi";
 import { FaUniversity, FaBuilding } from "react-icons/fa";
 import axios from "axios";
+import BASE_URL from "../config";
 
 const Profile = () => {
   const [currentUser, setCurrentUser] = useState(null);
@@ -68,7 +69,7 @@ const Profile = () => {
       const userId = localStorage.getItem("userId");
 
       const response = await axios.get(
-        `http://localhost:8080/api/user/profile/${userId}`,
+        `${BASE_URL}/api/user/profile/${userId}`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -131,36 +132,13 @@ const Profile = () => {
   };
 
   // Send to backend
-  const handleUpload = async () => {
-    if (!profileImage && !bannerImage) {
-      alert("Please select an image to upload");
-      return;
-    }
-
-    const formData = new FormData();
-    if (profileImage) formData.append("profileImage", profileImage);
-    if (bannerImage) formData.append("bannerImage", bannerImage);
-
-    try {
-      const res = await axios.post(
-        "http://localhost:5000/api/user/upload",
-        formData,
-        {
-          headers: { "Content-Type": "multipart/form-data" },
-        }
-      );
-      console.log("Upload success:", res.data);
-    } catch (err) {
-      console.error("Upload failed:", err);
-    }
-  };
   const handleSaveProfile = async () => {
     try {
       const token = localStorage.getItem("token");
       if (profileImageFile) formData.append("profileImage", profileImageFile);
       if (bannerImageFile) formData.append("bannerImage", bannerImageFile);
       const response = await axios.put(
-        `http://localhost:8080/api/user/profile`,
+        `${BASE_URL}/api/user/profile`,
         editForm,
         {
           headers: {

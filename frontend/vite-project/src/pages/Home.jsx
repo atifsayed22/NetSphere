@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import PostCard from '../components/PostCard';
 import CreatePost from '../components/CreatePost';
+import BASE_URL from "../config";
 
 const Home = () => {
   const [posts, setPosts] = useState([]);
@@ -9,7 +10,7 @@ const Home = () => {
 
   const fetchPosts = async () => {
     try {
-      const res = await axios.get('http://localhost:8080/api/posts');
+      const res = await axios.get(`${BASE_URL}/api/posts`);
       setPosts(res.data);
     } catch (error) {
       console.error('Error fetching posts:', error);

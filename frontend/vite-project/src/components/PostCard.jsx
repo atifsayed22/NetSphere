@@ -5,6 +5,7 @@ import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { FaRegComment } from "react-icons/fa";
 import { RiShareForwardLine } from "react-icons/ri";
 import { FiMoreHorizontal } from "react-icons/fi";
+import BASE_URL from "../config";
 
 const PostCard = ({ post }) => {
   const [liked, setLiked] = useState(
@@ -23,7 +24,7 @@ const PostCard = ({ post }) => {
       const userId = localStorage.getItem("userId");
 
       const res = await axios.put(
-        `http://localhost:8080/api/posts/${post._id}/like`,
+        `${BASE_URL}/api/posts/${post._id}/like`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -42,7 +43,7 @@ const PostCard = ({ post }) => {
       setLoadingComments(true);
       const token = localStorage.getItem("token");
       const res = await axios.get(
-        `http://localhost:8080/api/comment/${post._id}`,
+        `${BASE_URL}/api/comment/${post._id}`,
         {
           headers: { Authorization: `Bearer ${token}` },
         }
@@ -68,7 +69,7 @@ const PostCard = ({ post }) => {
     try {
       const token = localStorage.getItem("token");
       const res = await axios.post(
-        `http://localhost:8080/api/comment/${post._id}`,
+        `${BASE_URL}/api/comment/${post._id}`,
         { content: newComment },
         { headers: { Authorization: `Bearer ${token}` } }
       );

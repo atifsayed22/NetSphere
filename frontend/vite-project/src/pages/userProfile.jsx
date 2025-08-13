@@ -17,7 +17,7 @@ const UserProfile = () => {
     if (!token) return; // Not authenticated
     try {
       const res = await axios.get(
-        `http://localhost:8080/api/connections/isConnection/${userId}`,
+        `${BASE_URL}/api/connections/isConnection/${userId}`,
         {
           headers: { Authorization: `Bearer ${token}` }
         }
@@ -34,7 +34,7 @@ const UserProfile = () => {
   const fetchUserData = async () => {
     try {
       const res = await axios.get(
-        `http://localhost:8080/api/user/profile/${userId}`,
+        `${BASE_URL}/api/user/profile/${userId}`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setUserData(res.data.user || null);
@@ -62,14 +62,14 @@ const UserProfile = () => {
     try {
       if (connectionStatus === "none") {
         const res = await axios.post(
-          "http://localhost:8080/api/connections/send",
+          `${BASE_URL}/api/connections/send`,
           { recipientId: userId },
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setConnectionStatus(res.data.status || "pending");
       } else if (connectionStatus === "pending") {
         await axios.delete(
-          `http://localhost:8080/api/connections/cancel/${userId}`,
+          `${BASE_URL}/api/connections/cancel/${userId}`,
           { headers: { Authorization: `Bearer ${token}` } }
         );
         setConnectionStatus("none");

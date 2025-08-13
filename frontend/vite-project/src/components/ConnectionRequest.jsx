@@ -1,5 +1,6 @@
 import React from "react";
 import axios from "axios";
+import BASE_URL from "../config";
 
 const ConnectionRequest = ({ request, setConnectionRequests, setConnections }) => {
   const handleAction = async (action) => {
@@ -7,7 +8,7 @@ const ConnectionRequest = ({ request, setConnectionRequests, setConnections }) =
       const token = localStorage.getItem("token");
 
       await axios.put(
-        `http://localhost:8080/api/connections/accept/${request._id}`,
+        `${BASE_URL}/api/connections/accept/${request._id}`,
         { status: action },
         { headers: { Authorization: `Bearer ${token}` } }
       );

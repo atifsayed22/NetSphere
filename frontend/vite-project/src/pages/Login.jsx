@@ -3,6 +3,7 @@ import { useForm } from "react-hook-form";
 import { useNavigate, Link } from "react-router-dom";
 import axios from "axios";
 import { FiMail, FiLock, FiEye, FiEyeOff } from "react-icons/fi";
+import BASE_URL from "../config";
 
 const LoginPage = ({ onLoginSuccess }) => {
   const { register, handleSubmit } = useForm();
@@ -17,7 +18,7 @@ const LoginPage = ({ onLoginSuccess }) => {
     setError("");
 
     try {
-      const res = await axios.post("http://localhost:8080/api/auth/login", data);
+      const res = await axios.post(`${BASE_URL}/api/auth/login`, data);
 
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("userId", res.data.user.id);

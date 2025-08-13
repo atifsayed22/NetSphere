@@ -32,7 +32,7 @@ const RegisterPage = () => {
     setError("");
     setSuccess("");
     try {
-      const res = await axios.post("http://localhost:8080/api/auth/register", data);
+      const res = await axios.post(`${BASE_URL}/api/auth/register`, data);
       if (res.status === 201 || res.data.success) {
         setSuccess("✅ Account created! Redirecting to login...");
         reset();

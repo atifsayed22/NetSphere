@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import BASE_URL from '../config';
 
 const CreatePost = () => {
   const [isOpen, setIsOpen] = useState(false);
@@ -11,7 +12,7 @@ const CreatePost = () => {
   
     try {
       const res = await axios.post(
-        "http://localhost:8080/api/posts",
+       `${BASE_URL}/api/posts`,
         {
           content,
         },

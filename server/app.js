@@ -17,10 +17,9 @@ const port = 8080;
 
 dotenv.config();
 app.use(cors({
-    origin: ["https://net-sphere.vercel.app"], // your deployed frontend
+    origin: ["https://net-sphere-sfar.vercel.app"], // your deployed frontend
     credentials: true
   }));
-  
 app.use(express.json({ limit: '10mb' }));
 app.use(express.urlencoded({ limit: '10mb', extended: true }));
 app.listen(port,()=>{

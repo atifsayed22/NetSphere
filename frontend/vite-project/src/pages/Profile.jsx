@@ -31,30 +31,7 @@ const Profile = () => {
     }
   };
 
-  // const handleImageUpload = async (e, field) => {
-  //   const file = e.target.files[0];
-  //   if (!file) return;
-
-  //   const formData = new FormData();
-  //   formData.append("image", file);
-
-  //   try {
-  //     const token = localStorage.getItem("token");
-  //     const res = await axios.post(
-  //       "http://localhost:8080/api/user/upload",
-  //       formData,
-  //       {
-  //         headers: {
-  //           Authorization: `Bearer ${token}`,
-  //           "Content-Type": "multipart/form-data",
-  //         },
-  //       }
-  //     );
-  //     setEditForm((prev) => ({ ...prev, [field]: res.data.url }));
-  //   } catch (err) {
-  //     console.error("Upload failed:", err);
-  //   }
-  // };
+  
 
   const fetchUserProfile = async () => {
     try {

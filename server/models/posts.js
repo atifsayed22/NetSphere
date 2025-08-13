@@ -10,12 +10,7 @@ const postSchema = new mongoose.Schema({
     type: [String],  // store the uploaded image URL (e.g., from Cloudinary)
     default: []
   },
-  comments: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Comment",
-    }
-  ],
+  commentsCount: { type: Number, default: 0 },
   likes: [
     {
       type: mongoose.Schema.Types.ObjectId,

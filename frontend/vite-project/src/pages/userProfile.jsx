@@ -102,13 +102,15 @@ const UserProfile = () => {
     <div className="max-w-4xl mx-auto space-y-6">
       {/* Profile Header */}
       <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="h-48 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500"></div>
+        <div className="h-48 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500">
+          <img src={userData.bannerImage} className="h-48 w-full object-cover"alt="" />
+        </div>
 
         <div className="relative px-6 pb-6">
           <div className="absolute -top-16 left-6">
             <div className="h-32 w-32 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
               <img
-                src={userData.profilePic || "/default-profile.jpg"}
+                src={userData.profileImage || "/default-profile.jpg"}
                 alt="Profile"
                 className="h-full w-full rounded-full object-cover"
               />

@@ -44,12 +44,10 @@ const CreatePost = () => {
   // };
 
   return (
-    <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 mb-6">
+<>
       {/* Button to open the modal */}
       <div className="flex space-x-3">
-        <div className="h-10 w-10 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full flex items-center justify-center flex-shrink-0">
-          <span className="text-white font-semibold text-sm">AJ</span>
-        </div>
+      
         <button
           onClick={() => setIsOpen(true)}
           className="flex-1 text-left px-4 py-3 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors text-gray-600"
@@ -102,7 +100,7 @@ const CreatePost = () => {
           </div>
         </div>
       )}
-    </div>
+      </>
   );
 };
 

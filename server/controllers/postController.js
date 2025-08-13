@@ -21,7 +21,8 @@ export const createPost = async (req, res) => {
 export const getAllPosts = async (req, res) => {
 
   
-  const posts = await Post.find().populate("author", "name email").sort({ createdAt: -1 });
+  const posts = await Post.find().populate("author", "name email profileImage").sort({ createdAt: -1 });
+  console.log(posts)
 
 
   res.status(200).json(posts);

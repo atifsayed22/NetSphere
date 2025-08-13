@@ -29,7 +29,7 @@ const Header = ({ activeTab, setActiveTab , setIsAuthenticated }) => {
           <div className="flex items-center space-x-2">
             <span className="text-3xl"> <FaBriefcase className="text-blue-700" size={28} /></span>
             <h1 className="text-2xl font-extrabold text-blue-700 tracking-tight">
-              ProConnect
+              NetSphere
             </h1>
           </div>
 

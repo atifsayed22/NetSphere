@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema({
   profileImage: {
     type: String // URL or path
   },
-  coverImage: {
+  bannerImage: {
     type: String
   },
   location: String,

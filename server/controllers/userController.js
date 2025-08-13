@@ -1,5 +1,4 @@
 import User from "../models/users.js";
-import Connection from '../models/Connection.js';
 
 // GET - Get current user's profile
 export const getUserProfile = async (req, res) => {
@@ -32,22 +31,20 @@ export const getUserProfile = async (req, res) => {
 // PUT - Update current user's profile
 export const updateUserProfile = async (req, res) => {
   try {
-    console.log("Received PUT to /profile");
+    const userId = req.user.id;
+    const updateData = { ...req.body };
 
-
-    const userId = req.user.id; // From authentication middleware
-    const updateData = req.body;
-    console.log(userId)
+    console.log("Updating profile for user:", userId);
     console.log(updateData)
 
-    // Remove sensitive fields that shouldn't be updated via this endpoint
+    // Remove sensitive fields
     delete updateData.password;
     delete updateData.email;
     delete updateData.connections;
     delete updateData.followers;
     delete updateData.following;
 
-    // Validate and clean experience array if provided
+    // Handle experience array if provided
     if (updateData.experience) {
       updateData.experience = updateData.experience.map(exp => ({
         position: exp.position || '',
@@ -55,12 +52,19 @@ export const updateUserProfile = async (req, res) => {
         duration: exp.duration || ''
       }));
     }
-    
 
+    // Handle uploaded images (from multer-storage-cloudinary)
+    if (req.file?.profileImage) {
+      console.log(req.files.profileImage[0].path)
+      updateData.profileImage = req.files.profileImage[0].path; // Cloudinary URL
+    }
+    if (req.file?.bannerImage) {
 
-  
+      console.log(req.files.bannerImage[0].path)
+      updateData.bannerImage = req.files.bannerImage[0].path; // Cloudinary URL
+    }
 
-    // Update user
+    // Update user in DB
     const updatedUser = await User.findByIdAndUpdate(
       userId,
       { $set: updateData },
@@ -68,23 +72,19 @@ export const updateUserProfile = async (req, res) => {
     ).select('-password');
 
     if (!updatedUser) {
-      return res.status(404).json({ 
-        message: 'User not found' 
-      });
+      return res.status(404).json({ message: 'User not found' });
     }
-
+    console.log(updatedUser)
     res.status(200).json({
       message: 'Profile updated successfully',
       user: updatedUser
     });
-
   } catch (error) {
     console.error('Error updating profile:', error);
-    res.status(500).json({ 
-      message: 'Server error while updating profile' 
-    });
+    res.status(500).json({ message: 'Server error while updating profile' });
   }
 };
+
 
 // GET - Get user profile by ID (for viewing other users)
 export const getUserProfileById = async (req, res) => {
@@ -114,4 +114,4 @@ export const getUserProfileById = async (req, res) => {
     });
   }
 };
-// Toggle connection
+

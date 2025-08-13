@@ -9,6 +9,9 @@ const Profile = () => {
   const [isEditing, setIsEditing] = useState(false);
   const [editForm, setEditForm] = useState({});
 
+  const [profileImageFile, setProfileImageFile] = useState(null);
+  const [bannerImageFile, setBannerImageFile] = useState(null);
+
   // Fetch user data when component mounts
   useEffect(() => {
     fetchUserProfile();
@@ -27,30 +30,30 @@ const Profile = () => {
     }
   };
 
-  const handleImageUpload = async (e, field) => {
-    const file = e.target.files[0];
-    if (!file) return;
+  // const handleImageUpload = async (e, field) => {
+  //   const file = e.target.files[0];
+  //   if (!file) return;
 
-    const formData = new FormData();
-    formData.append("image", file);
+  //   const formData = new FormData();
+  //   formData.append("image", file);
 
-    try {
-      const token = localStorage.getItem("token");
-      const res = await axios.post(
-        "http://localhost:8080/api/user/upload",
-        formData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "multipart/form-data",
-          },
-        }
-      );
-      setEditForm((prev) => ({ ...prev, [field]: res.data.url }));
-    } catch (err) {
-      console.error("Upload failed:", err);
-    }
-  };
+  //   try {
+  //     const token = localStorage.getItem("token");
+  //     const res = await axios.post(
+  //       "http://localhost:8080/api/user/upload",
+  //       formData,
+  //       {
+  //         headers: {
+  //           Authorization: `Bearer ${token}`,
+  //           "Content-Type": "multipart/form-data",
+  //         },
+  //       }
+  //     );
+  //     setEditForm((prev) => ({ ...prev, [field]: res.data.url }));
+  //   } catch (err) {
+  //     console.error("Upload failed:", err);
+  //   }
+  // };
 
   const fetchUserProfile = async () => {
     try {
@@ -60,6 +63,7 @@ const Profile = () => {
         console.error("No token found");
         return;
       }
+     
 
       const userId = localStorage.getItem("userId");
 
@@ -118,27 +122,43 @@ const Profile = () => {
     }));
   };
 
-  const handleSaveSkills = async () => {
-    try {
-      const updatedSkills = editedSkills
-        .split(",")
-        .map((s) => s.trim())
-        .filter(Boolean);
-
-      const res = await axios.put(`/api/users/${currentUser._id}`, {
-        skills: updatedSkills,
-      });
-
-      setCurrentUser(res.data); // or re-fetch user data
-      setIsEditing(false);
-    } catch (err) {
-      console.error("Failed to update skills", err);
-    }
+  const handleProfileChange = (e) => {
+    setProfileImage(e.target.files[0]);
   };
 
+  const handleBannerChange = (e) => {
+    setBannerImage(e.target.files[0]);
+  };
+
+  // Send to backend
+  const handleUpload = async () => {
+    if (!profileImage && !bannerImage) {
+      alert("Please select an image to upload");
+      return;
+    }
+
+    const formData = new FormData();
+    if (profileImage) formData.append("profileImage", profileImage);
+    if (bannerImage) formData.append("bannerImage", bannerImage);
+
+    try {
+      const res = await axios.post(
+        "http://localhost:5000/api/user/upload",
+        formData,
+        {
+          headers: { "Content-Type": "multipart/form-data" },
+        }
+      );
+      console.log("Upload success:", res.data);
+    } catch (err) {
+      console.error("Upload failed:", err);
+    }
+  };
   const handleSaveProfile = async () => {
     try {
       const token = localStorage.getItem("token");
+      if (profileImageFile) formData.append("profileImage", profileImageFile);
+      if (bannerImageFile) formData.append("bannerImage", bannerImageFile);
       const response = await axios.put(
         `http://localhost:8080/api/user/profile`,
         editForm,
@@ -229,7 +249,7 @@ const Profile = () => {
               "https://images.unsplash.com/photo-1504805572947-34fad45aed93?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
             }
             alt="Banner"
-            className="h-48 w-full object-cover"
+            className="h-48 w-full object-fit"
           />
 
           {/* overlay */}
@@ -238,23 +258,10 @@ const Profile = () => {
         {/* Profile Picture */}
         <div className="relative px-6 pb-6">
           <div className="absolute -top-16 left-6">
-            {/* {currentUser.profilePicture ? (
-              <img
-                src={"https://images.unsplash.com/photo-1506784983877-45594efa4cbe?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80"}
-                alt={currentUser.name}
-                className="h-32 w-32 rounded-full border-4 border-white shadow-lg object-cover"
-              />
-            ) : (
-              <div className="h-32 w-32 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full flex items-center justify-center border-4 border-white shadow-lg text-white font-bold text-2xl">
-                {currentUser.name
-                  ?.split(" ")
-                  .map((n) => n[0])
-                  .join("") || "AJ"}
-              </div>
-            )} */}
+            
             <img
               src={
-                "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80"
+               currentUser.profileImage? currentUser.profileImage : "https://images.unsplash.com/photo-1506784983877-45594efa4cbe?ixlib=rb-4.0.3&auto=format&fit=crop&w=1950&q=80"
               }
               alt={currentUser.name}
               className="h-32 w-32 rounded-full border-4 border-white shadow-lg object-cover"
@@ -323,7 +330,7 @@ const Profile = () => {
                 </div>
 
                 {/* Title */}
-                <div>
+                {/* <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Title
                   </label>
@@ -334,10 +341,10 @@ const Profile = () => {
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
-                </div>
+                </div> */}
 
                 {/* Company */}
-                <div>
+                {/* <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Company
                   </label>
@@ -348,7 +355,7 @@ const Profile = () => {
                     onChange={handleInputChange}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                   />
-                </div>
+                </div> */}
 
                 {/* Location */}
                 <div>
@@ -365,21 +372,21 @@ const Profile = () => {
                 </div>
 
                 {/* Profile Picture Upload */}
-                {/* <div>
+                { <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Profile Picture
                   </label>
                   <input
                     type="file"
-                    name="profilePicture"
+                    name="profileImage"
                     accept="image/*"
-                    onChange={(e) => handleImageChange(e, "profilePicture")}
+                    onChange={(e) => handleImageChange(e, "profileImage")}
                     className="w-full"
                   />
-                </div> */}
+                </div> }
 
                 {/* Banner Image Upload */}
-                {/* <div>
+                { <div>
                   <label className="block text-sm font-medium text-gray-700 mb-1">
                     Banner Image
                   </label>
@@ -390,7 +397,7 @@ const Profile = () => {
                     onChange={(e) => handleImageChange(e, "bannerImage")}
                     className="w-full"
                   />
-                </div> */}
+                </div> }
               </div>
             )}
           </div>
@@ -447,7 +454,8 @@ const Profile = () => {
             <div key={index} className="flex space-x-4">
               <div className="flex-shrink-0">
                 <div className="h-12 w-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <span className="text-gray-600"><FaUniversity className="text-gray-600" />
+                  <span className="text-gray-600">
+                    <FaUniversity className="text-gray-600" />
                   </span>
                 </div>
               </div>
@@ -459,7 +467,9 @@ const Profile = () => {
                     </h3>
                     <p className="text-gray-600">{edu.school}</p>
                     <div className="flex items-center space-x-1 mt-1 text-sm text-gray-500">
-                      <span><FiCalendar className="text-gray-500" /></span>
+                      <span>
+                        <FiCalendar className="text-gray-500" />
+                      </span>
                       <span>
                         {edu.startYear} – {edu.endYear}
                       </span>
@@ -574,7 +584,9 @@ const Profile = () => {
             <div key={index} className="flex space-x-4">
               <div className="flex-shrink-0">
                 <div className="h-12 w-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                  <span className="text-gray-600"><FaBuilding className="text-gray-600" /></span>
+                  <span className="text-gray-600">
+                    <FaBuilding className="text-gray-600" />
+                  </span>
                 </div>
               </div>
               <div className="flex-1">
@@ -585,7 +597,9 @@ const Profile = () => {
                     </h3>
                     <p className="text-gray-600">{exp.company}</p>
                     <div className="flex items-center space-x-1 mt-1 text-sm text-gray-500">
-                      <span><FiCalendar className="text-gray-500" /></span>
+                      <span>
+                        <FiCalendar className="text-gray-500" />
+                      </span>
                       <span>{exp.duration}</span>
                     </div>
                   </>

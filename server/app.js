@@ -16,6 +16,7 @@ const app = express();
 const port = 8080;
 
 dotenv.config();
+//cors configuration
 app.use(cors({
     origin: [
       "http://localhost:5173",

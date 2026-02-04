@@ -28,6 +28,7 @@ const LoginPage = ({ onLoginSuccess }) => {
 
       navigate("/home");
     } catch (err) {
+      console.log(err)
       const message = err.response?.data?.message || "Login failed";
       setError(message);
     } finally {

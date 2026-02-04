@@ -44,17 +44,17 @@ const Network = () => {
     return (names[0][0] + names[1][0]).toUpperCase();
   }
   if (loading)
-    return <p className="text-center mt-10">Loading network data...</p>;
+    return <p className="loading-center">Loading network data...</p>;
 
   return (
-    <div className="max-w-6xl mx-auto px-6 py-10">
-      <h1 className="text-3xl font-bold mb-8">My Network</h1>
+    <div className="network-container">
+      <h1 className="network-title">My Network</h1>
 
       {/* Connection Requests */}
-      <section className="mb-12">
-        <h2 className="text-xl font-semibold mb-4">Connection Requests</h2>
+      <section className="network-section">
+        <h2 className="network-section-title">Connection Requests</h2>
         {connectionRequests.length === 0 ? (
-          <p className="text-gray-500">No pending requests</p>
+          <p className="network-empty">No pending requests</p>
         ) : (
           <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
             {connectionRequests.map((req) => (
@@ -71,11 +71,11 @@ const Network = () => {
 
       {/* Connections List */}
       <section>
-        <h2 className="text-xl font-semibold mb-4">Your Connections</h2>
+        <h2 className="network-section-title">Your Connections</h2>
         {connections.length === 0 ? (
-          <p className="text-gray-500">You don't have any connections yet</p>
+          <p className="network-empty">You don't have any connections yet</p>
         ) : (
-          <div className="grid gap-4 sm:grid-cols-2 md:grid-cols-3">
+          <div className="network-grid">
             {connections.map((conn) => {
               const otherUser =
                 conn.requester._id === userId ? conn.recipient : conn.requester;
@@ -84,24 +84,24 @@ const Network = () => {
                 <Link
                   to={`/user/${otherUser._id}`}
                   key={conn._id}
-                  className="p-4 border rounded-lg flex items-center gap-4 shadow-sm hover:shadow-md transition-shadow duration-300 bg-white"
+                  className="connection-card"
                 >
                   {otherUser.profilePicture ? (
                     <img
                       src={otherUser.profilePicture}
                       alt={otherUser.name}
-                      className="w-12 h-12 rounded-full object-cover"
+                      className="connection-avatar"
                     />
                   ) : (
-                    <div className="w-12 h-12 rounded-full bg-indigo-500 text-white flex items-center justify-center font-semibold text-lg">
+                    <div className="connection-avatar-placeholder">
                       {getInitials(otherUser.name)}
                     </div>
                   )}
-                  <div>
-                    <p className="font-medium text-gray-900">
+                  <div className="connection-info">
+                    <p className="connection-name">
                       {otherUser.name}
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="connection-email">
                       {otherUser.email || "No profession"}
                     </p>
                   </div>

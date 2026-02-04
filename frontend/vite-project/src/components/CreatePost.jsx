@@ -1,20 +1,27 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import { FiImage, FiX } from 'react-icons/fi';
 import BASE_URL from '../config';
 
-const CreatePost = () => {
+const CreatePost = ({ onPostCreated }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [content, setContent] = useState('');
-
+  const [image, setImage] = useState(null);
+  const [imagePreview, setImagePreview] = useState(null);
+  const [isPosting, setIsPosting] = useState(false);
 
   const handlePost = async () => {
+    if (!content.trim() && !image) return;
+    
     const token = localStorage.getItem("token");
+    setIsPosting(true);
   
     try {
       const res = await axios.post(
        `${BASE_URL}/api/posts`,
         {
           content,
+          imageUrl: image, // base64 image
         },
         {
           headers: {
@@ -27,31 +34,52 @@ const CreatePost = () => {
   
       // Reset state
       setContent('');
+      setImage(null);
+      setImagePreview(null);
       setIsOpen(false);
+      
+      // Notify parent to refresh posts
+      if (onPostCreated) {
+        onPostCreated();
+      }
     } catch (error) {
       if (error.response) {
         console.error("Error:", error.response.data.message);
       } else {
         console.error("Error posting:", error.message);
       }
+    } finally {
+      setIsPosting(false);
     }
   };
 
-  // const handleImageChange = (e) => {
-  //   const file = e.target.files[0];
-  //   if (file) {
-  //     setImage(URL.createObjectURL(file)); // preview image
-  //   }
-  // };
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setImagePreview(URL.createObjectURL(file));
+      
+      // Convert to base64
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setImage(reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const removeImage = () => {
+    setImage(null);
+    setImagePreview(null);
+  };
 
   return (
 <>
       {/* Button to open the modal */}
-      <div className="flex space-x-3">
+      <div className="create-post-trigger">
       
         <button
           onClick={() => setIsOpen(true)}
-          className="flex-1 text-left px-4 py-3 border border-gray-300 rounded-full hover:bg-gray-50 transition-colors text-gray-600"
+          className="create-post-btn"
         >
           Start a post...
         </button>
@@ -59,45 +87,65 @@ const CreatePost = () => {
 
       {/* Modal UI */}
       {isOpen && (
-        <div className="mt-4 p-4 border-t border-gray-200">
+        <div className="create-post-modal">
           <textarea
             rows={4}
-            className="w-full border border-gray-300 rounded-lg p-2 focus:outline-none focus:ring focus:border-blue-300"
+            className="create-post-textarea"
             placeholder="What's on your mind?"
             value={content}
             onChange={(e) => setContent(e.target.value)}
           />
           
-          {/* <input
-            type="file"
-            accept="image/*"
-            onChange={handleImageChange}
-            className="mt-3"
-          /> */}
-
-          {/* {image && (
-            <div className="mt-3">
+          {/* Image Preview */}
+          {imagePreview && (
+            <div className="image-preview-container">
               <img
-                src={image}
+                src={imagePreview}
                 alt="Preview"
-                className="max-h-48 object-contain border rounded-lg"
+                className="image-preview"
               />
+              <button
+                onClick={removeImage}
+                className="remove-image-btn"
+              >
+                <FiX size={16} />
+              </button>
             </div>
-          )} */}
+          )}
 
-          <div className="mt-4 flex justify-end space-x-2">
-            <button
-              onClick={() => setIsOpen(false)}
-              className="px-4 py-2 text-sm border rounded-md hover:bg-gray-100"
-            >
-              Cancel
-            </button>
-            <button
-              onClick={handlePost}
-              className="px-4 py-2 text-sm bg-blue-600 text-white rounded-md hover:bg-blue-700"
-            >
-              Post
-            </button>
+          <div className="create-post-actions">
+            {/* Image Upload Button */}
+            <label className="image-upload-btn">
+              <FiImage size={20} />
+              <span>Photo</span>
+              <input
+                type="file"
+                accept="image/*"
+                onChange={handleImageChange}
+                className="hidden"
+              />
+            </label>
+
+            <div className="profile-edit-actions">
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  setContent('');
+                  setImage(null);
+                  setImagePreview(null);
+                }}
+                className="cancel-btn"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handlePost}
+                disabled={isPosting || (!content.trim() && !image)}
+                className="post-submit-btn"
+              >
+                {isPosting ? 'Posting...' : 'Post'}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -28,25 +28,25 @@ const ConnectionRequest = ({ request, setConnectionRequests, setConnections }) =
   };
 
   return (
-    <div className="p-4 border rounded-lg shadow-sm flex items-center gap-4">
+    <div className="request-card">
       <img
         src={request.requester?.profileImage || "/default-avatar.png"}
         alt={request.requester?.name || "User"}
-        className="w-12 h-12 rounded-full object-cover"
+        className="request-avatar"
       />
-      <div className="flex-1">
-        <p className="font-medium">{request.requester?.name || "Unknown User"}</p>
-        <p className="text-sm text-gray-500">{request.requester?.location || request.requester?.email || "No details available"}</p>
-        <div className="mt-3 flex gap-2">
+      <div className="request-info">
+        <p className="request-name">{request.requester?.name || "Unknown User"}</p>
+        <p className="request-details">{request.requester?.location || request.requester?.email || "No details available"}</p>
+        <div className="request-actions">
           <button
             onClick={() => handleAction("accepted")}
-            className="px-3 py-1 bg-green-500 text-white rounded hover:bg-green-600"
+            className="accept-btn"
           >
             Accept
           </button>
           <button
             onClick={() => handleAction("rejected")}
-            className="px-3 py-1 bg-red-500 text-white rounded hover:bg-red-600"
+            className="reject-btn"
           >
             Reject
           </button>

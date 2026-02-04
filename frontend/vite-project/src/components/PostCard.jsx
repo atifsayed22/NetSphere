@@ -4,10 +4,10 @@ import axios from "axios";
 import { AiFillHeart, AiOutlineHeart } from "react-icons/ai";
 import { FaRegComment } from "react-icons/fa";
 import { RiShareForwardLine } from "react-icons/ri";
-import { FiMoreHorizontal } from "react-icons/fi";
+import { FiMoreHorizontal, FiTrash2 } from "react-icons/fi";
 import BASE_URL from "../config";
 
-const PostCard = ({ post }) => {
+const PostCard = ({ post, onDelete }) => {
   const [liked, setLiked] = useState(
     post.likes?.includes(localStorage.getItem("userId")) || false
   );
@@ -16,7 +16,34 @@ const PostCard = ({ post }) => {
   const [comments, setComments] = useState([]);
   const [loadingComments, setLoadingComments] = useState(false);
   const [newComment, setNewComment] = useState("");
-  const [commentCount, setCommentCount] = useState(post.commentsCount || 0); // store count separately
+  const [commentCount, setCommentCount] = useState(post.commentsCount || 0);
+  const [showMenu, setShowMenu] = useState(false);
+  const [isDeleting, setIsDeleting] = useState(false);
+
+  const currentUserId = localStorage.getItem("userId");
+  const isOwner = post.author?._id === currentUserId;
+
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this post?")) return;
+    
+    try {
+      setIsDeleting(true);
+      const token = localStorage.getItem("token");
+      await axios.delete(`${BASE_URL}/api/posts/${post._id}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      
+      if (onDelete) {
+        onDelete(post._id);
+      }
+    } catch (error) {
+      console.error("Error deleting post:", error);
+      alert("Failed to delete post");
+    } finally {
+      setIsDeleting(false);
+      setShowMenu(false);
+    }
+  };
 
   const handleLike = async () => {
     try {
@@ -92,21 +119,20 @@ const PostCard = ({ post }) => {
   };
 
   return (
-    <article className="bg-white rounded-xl shadow-sm border border-gray-200 p-6 mb-6">
+    <article className="post-card">
       {/* Author Section */}
-      <div className="flex items-start space-x-3 mb-4">
+      <div className="post-header">
         <Link to={`/user/${post.author?._id || post.userId}`}>
-          <div className="h-12 w-12 rounded-full overflow-hidden flex-shrink-0 hover:scale-105 transition-transform border border-gray-200 bg-gray-100">
+          <div className="post-avatar">
             {post?.author?.profileImage ? (
               <img
                 src={post.author.profileImage}
                 alt={post.author?.name || "User"}
-                className="h-full w-full object-cover"
                 loading="lazy"
               />
             ) : (
-              <div className="h-full w-full flex items-center justify-center bg-gradient-to-br from-blue-400 to-purple-600">
-                <span className="text-white font-semibold text-xs">
+              <div className="post-avatar-placeholder">
+                <span>
                   {(
                     (post.author?.name || "User")
                       .split(" ")
@@ -119,16 +145,16 @@ const PostCard = ({ post }) => {
           </div>
         </Link>
 
-        <div className="flex-1">
+        <div className="post-author-info">
           <Link to={`/user/${post.author?._id || post.userId}`}>
-            <h3 className="font-semibold text-gray-900 hover:underline cursor-pointer">
+            <h3 className="post-author-name">
               {post.author?.name || "Unknown User"}
             </h3>
           </Link>
-          <p className="text-sm text-gray-600">
+          <p className="post-author-email">
             {post.author?.email || "No email"}
           </p>
-          <p className="text-xs text-gray-500">
+          <p className="post-date">
             {new Date(post.createdAt).toLocaleDateString("en-US", {
               weekday: "short",
               year: "numeric",
@@ -137,29 +163,64 @@ const PostCard = ({ post }) => {
             })}
           </p>
         </div>
-        <div className="text-gray-400 cursor-pointer">
-          <FiMoreHorizontal size={20} />
+        <div className="post-menu-container">
+          {isOwner && (
+            <>
+              <button
+                onClick={() => setShowMenu(!showMenu)}
+                className="post-menu-btn"
+              >
+                <FiMoreHorizontal size={20} />
+              </button>
+              
+              {showMenu && (
+                <div className="post-menu-dropdown">
+                  <button
+                    onClick={handleDelete}
+                    disabled={isDeleting}
+                    className="post-delete-btn"
+                  >
+                    <FiTrash2 size={16} />
+                    {isDeleting ? "Deleting..." : "Delete"}
+                  </button>
+                </div>
+              )}
+            </>
+          )}
         </div>
       </div>
 
       {/* Post Content */}
-      <div className="mb-4">
-        <p className="text-gray-800 leading-relaxed">{post.content}</p>
+      <div className="post-content">
+        {post.content && (
+          <p className="post-text">{post.content}</p>
+        )}
+        
+        {/* Post Images */}
+        {post.imageUrl && post.imageUrl.length > 0 && (
+          <div className="post-image-container">
+            {post.imageUrl.map((img, index) => (
+              <img
+                key={index}
+                src={img}
+                alt="Post"
+                className="post-image"
+                loading="lazy"
+              />
+            ))}
+          </div>
+        )}
       </div>
 
       {/* Actions */}
-      <div className="flex items-center justify-between pt-3 border-t border-gray-100">
+      <div className="post-actions">
         {/* Like */}
         <button
           onClick={handleLike}
-          className={`flex items-center gap-1 px-2 py-1 rounded-md border text-sm font-medium transition-all duration-200 ${
-            liked
-              ? "bg-red-100 text-red-600 border-red-200"
-              : "bg-white text-gray-600 border-gray-200 hover:bg-gray-50"
-          }`}
+          className={`like-btn ${liked ? 'liked' : ''}`}
         >
           {liked ? (
-            <AiFillHeart size={18} className="text-red-500" />
+            <AiFillHeart size={18} />
           ) : (
             <AiOutlineHeart size={18} />
           )}
@@ -169,14 +230,14 @@ const PostCard = ({ post }) => {
         {/* Comment */}
         <button
           onClick={toggleComments}
-          className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors text-gray-600"
+          className="action-btn"
         >
           <FaRegComment size={18} />
           <span>{commentCount}</span>
         </button>
 
         {/* Share */}
-        <button className="flex items-center space-x-2 px-3 py-2 rounded-lg hover:bg-gray-50 transition-colors text-gray-600">
+        <button className="action-btn">
           <RiShareForwardLine size={18} />
           <span>Share</span>
         </button>
@@ -184,38 +245,38 @@ const PostCard = ({ post }) => {
 
       {/* Comment Section */}
       {showComments && (
-        <div className="mt-4 border-t pt-4">
+        <div className="comments-section">
           {loadingComments ? (
-            <p className="text-gray-500 text-sm">Loading comments...</p>
+            <p className="comments-loading">Loading comments...</p>
           ) : (
-            <div className="space-y-3 max-h-48 overflow-y-auto">
+            <div className="comments-list">
               {comments.length > 0 ? (
                 comments.map((c, idx) => (
-                  <div key={idx} className="flex space-x-2 text-sm">
-                    <span className="font-semibold">
+                  <div key={idx} className="comment-item">
+                    <span className="comment-author">
                       {c.user?.name || c.author?.name || "User"}:
                     </span>
                     <span>{c.content}</span>
                   </div>
                 ))
               ) : (
-                <p className="text-gray-500 text-sm">No comments yet.</p>
+                <p className="no-comments">No comments yet.</p>
               )}
             </div>
           )}
 
           {/* Add Comment */}
-          <div className="mt-3 flex items-center space-x-2">
+          <div className="add-comment">
             <input
               type="text"
               placeholder="Write a comment..."
               value={newComment}
               onChange={(e) => setNewComment(e.target.value)}
-              className="flex-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-1 focus:ring-blue-500 text-sm"
+              className="comment-input"
             />
             <button
               onClick={handleAddComment}
-              className="px-3 py-2 bg-blue-500 text-white text-sm rounded-lg hover:bg-blue-600"
+              className="comment-submit-btn"
             >
               Post
             </button>

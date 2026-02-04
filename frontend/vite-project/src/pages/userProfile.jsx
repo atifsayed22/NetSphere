@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useParams } from "react-router-dom";
 import axios from "axios";
 import PostCard from "../components/PostCard";
+import BASE_URL from "../config";
 
 const UserProfile = () => {
   const { userId } = useParams();
@@ -30,6 +31,18 @@ const UserProfile = () => {
     }
   };
   
+  const fetchUserPosts = async () => {
+    try {
+      const res = await axios.get(
+        `${BASE_URL}/api/posts/user/${userId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      setUserPosts(Array.isArray(res.data) ? res.data : []);
+    } catch (err) {
+      console.error("Error fetching user posts:", err);
+      setUserPosts([]);
+    }
+  };
 
   const fetchUserData = async () => {
     try {
@@ -38,19 +51,16 @@ const UserProfile = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       setUserData(res.data.user || null);
-      setUserPosts(Array.isArray(res.data.posts) ? res.data.posts : []);
     } catch (err) {
       console.error("Error fetching user profile:", err);
       setUserData(null);
-      setUserPosts([]);
     }
   };
 
   useEffect(() => {
     setLoading(true);
-    fetchUserData().then(() => {
-      fetchConnectionStatus().finally(() => setLoading(false));
-    });
+    Promise.all([fetchUserData(), fetchUserPosts(), fetchConnectionStatus()])
+      .finally(() => setLoading(false));
   }, [userId]);
 
   const handleConnectionAction = async () => {
@@ -81,58 +91,72 @@ const UserProfile = () => {
     }
   };
 
+  const getInitials = (name) => {
+    if (!name) return "U";
+    return name
+      .split(" ")
+      .map((word) => word[0])
+      .join("")
+      .toUpperCase();
+  };
+
   if (loading) {
     return (
-      <div className="max-w-4xl mx-auto text-center py-16">
-        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 mx-auto"></div>
-        <p className="mt-4 text-gray-600">Loading profile...</p>
+      <div className="profile-container">
+        <div className="profile-loading">
+          <div className="spinner-blue"></div>
+          <p className="profile-loading-text">Loading profile...</p>
+        </div>
       </div>
     );
   }
 
   if (!userData) {
     return (
-      <div className="max-w-4xl mx-auto text-center py-16">
-        <p className="text-red-600">Failed to load profile. Please try again later.</p>
+      <div className="profile-container">
+        <div className="profile-error">
+          <p className="profile-error-text">Failed to load profile. Please try again later.</p>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="profile-container">
       {/* Profile Header */}
-      <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
-        <div className="h-48 bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500">
-          <img src={userData.bannerImage} className="h-48 w-full object-cover"alt="" />
-        </div>
+      <div className="profile-card">
+        <div className="profile-banner"></div>
 
-        <div className="relative px-6 pb-6">
-          <div className="absolute -top-16 left-6">
-            <div className="h-32 w-32 bg-gradient-to-br from-blue-400 to-purple-600 rounded-full flex items-center justify-center border-4 border-white shadow-lg">
+        <div className="profile-info-section">
+          <div className="profile-avatar-container">
+            {userData.profileImage ? (
               <img
-                src={userData.profileImage || "/default-profile.jpg"}
-                alt="Profile"
-                className="h-full w-full rounded-full object-cover"
+                src={userData.profileImage}
+                alt={userData.name}
+                className="profile-avatar"
               />
-            </div>
+            ) : (
+              <div className="profile-avatar-placeholder">
+                <span>
+                  {getInitials(userData.name)}
+                </span>
+              </div>
+            )}
           </div>
 
-          <div className="mt-4 ml-36">
-            <h1 className="text-3xl font-bold text-gray-900">{userData.name}</h1>
-            <p className="text-gray-600 mt-1">{userData.email}</p>
-            {userData.bio && <p className="text-gray-700 leading-relaxed mt-2">{userData.bio}</p>}
+          <div className="profile-details">
+            <h1 className="profile-name">{userData.name}</h1>
+            <p className="profile-email">{userData.email}</p>
+            <div className="profile-stats">
+              <span>{userData.connections?.length || 0} connections</span>
+              <span>{userPosts.length} posts</span>
+            </div>
 
             {currentUserId !== userId && (
               <button
                 onClick={handleConnectionAction}
                 disabled={connectionStatus === "accepted"}
-                className={`mt-4 px-4 py-2 text-sm font-medium rounded-md transition-all ${
-                  connectionStatus === "accepted"
-                    ? "bg-gray-200 text-gray-800 cursor-not-allowed"
-                    : connectionStatus === "pending"
-                    ? "bg-yellow-500 text-white hover:bg-yellow-600"
-                    : "bg-blue-600 text-white hover:bg-blue-700"
-                }`}
+                className={connectionStatus === "accepted" ? "connected-badge" : connectionStatus === "pending" ? "pending-badge" : "connect-btn"}
               >
                 {connectionStatus === "accepted"
                   ? "Connected"
@@ -145,69 +169,27 @@ const UserProfile = () => {
         </div>
       </div>
 
-      {/* Education */}
-      {userData.education?.length > 0 && (
-        <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Education</h2>
-          {userData.education.map((edu, i) => (
-            <div key={i} className="mb-3">
-              <h3 className="text-lg font-semibold text-gray-900">{edu.school}</h3>
-              <p className="text-gray-600">
-                {edu.degree} in {edu.fieldOfStudy}
-              </p>
-              <div className="flex items-center space-x-1 mt-1 text-sm text-gray-500">
-                <span>📅</span>
-                <span>
-                  {edu.startYear} - {edu.endYear}
-                </span>
-              </div>
-            </div>
-          ))}
-        </section>
-      )}
-
-      {/* Experience */}
-      {userData.experience?.length > 0 && (
-        <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Experience</h2>
-          <ul className="space-y-3">
-            {userData.experience.map((exp, i) => (
-              <li key={i} className="text-gray-700">
-                <strong>{exp.position}</strong> at {exp.company} ({exp.duration})
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
-
-      {/* Skills */}
-      {userData.skills?.length > 0 && (
-        <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Skills</h2>
-          <div className="flex flex-wrap gap-2">
-            {userData.skills.map((skill, i) => (
-              <span
-                key={i}
-                className="bg-blue-100 text-blue-700 px-3 py-1 rounded-full text-sm"
-              >
-                {skill}
-              </span>
-            ))}
-          </div>
-        </section>
-      )}
+      {/* About Section */}
+      <section className="profile-section">
+        <h2 className="section-title">About</h2>
+        <p className="section-content">
+          {userData.about || "This user hasn't added a bio yet."}
+        </p>
+      </section>
 
       {/* Posts */}
-      <section className="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-        <h2 className="text-xl font-semibold text-gray-900 mb-4">Posts</h2>
+      <section className="profile-section">
+        <h2 className="section-title">
+          Posts ({userPosts.length})
+        </h2>
         {userPosts.length > 0 ? (
-          <div className="space-y-4">
+          <div className="posts-grid">
             {userPosts.map((post) => (
               <PostCard key={post._id} post={post} />
             ))}
           </div>
         ) : (
-          <p className="text-gray-500">No posts yet.</p>
+          <p className="section-empty">No posts yet.</p>
         )}
       </section>
     </div>

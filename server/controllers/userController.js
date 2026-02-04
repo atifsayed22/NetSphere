@@ -6,9 +6,7 @@ export const getUserProfile = async (req, res) => {
     // req.userId comes from the authentication middleware
     const user = await User.findById(req.userId)
       .select('-password') // Exclude password from response
-      .populate('connections', 'name headline profileImage')
-      .populate('followers', 'name headline profileImage')
-      .populate('following', 'name headline profileImage');
+      .populate('connections', 'name profileImage');
 
     if (!user) {
       return res.status(404).json({ 
@@ -34,35 +32,10 @@ export const updateUserProfile = async (req, res) => {
     const userId = req.user.id;
     const updateData = { ...req.body };
 
-    console.log("Updating profile for user:", userId);
-    console.log(updateData)
-
     // Remove sensitive fields
     delete updateData.password;
     delete updateData.email;
     delete updateData.connections;
-    delete updateData.followers;
-    delete updateData.following;
-
-    // Handle experience array if provided
-    if (updateData.experience) {
-      updateData.experience = updateData.experience.map(exp => ({
-        position: exp.position || '',
-        company: exp.company || '',
-        duration: exp.duration || ''
-      }));
-    }
-
-    // Handle uploaded images (from multer-storage-cloudinary)
-    if (req.file?.profileImage) {
-      console.log(req.files.profileImage[0].path)
-      updateData.profileImage = req.files.profileImage[0].path; // Cloudinary URL
-    }
-    if (req.file?.bannerImage) {
-
-      console.log(req.files.bannerImage[0].path)
-      updateData.bannerImage = req.files.bannerImage[0].path; // Cloudinary URL
-    }
 
     // Update user in DB
     const updatedUser = await User.findByIdAndUpdate(
@@ -74,7 +47,7 @@ export const updateUserProfile = async (req, res) => {
     if (!updatedUser) {
       return res.status(404).json({ message: 'User not found' });
     }
-    console.log(updatedUser)
+
     res.status(200).json({
       message: 'Profile updated successfully',
       user: updatedUser
@@ -93,9 +66,7 @@ export const getUserProfileById = async (req, res) => {
     
     const user = await User.findById(userId)
       .select('-password -email') // Don't send sensitive data for public view
-      
-      .populate('followers', 'name headline profileImage')
-      .populate('following', 'name headline profileImage');
+      .populate('connections', 'name profileImage');
 
     if (!user) {
       return res.status(404).json({ 

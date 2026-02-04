@@ -64,11 +64,13 @@ export const rejectConnectionRequest = async (req, res) => {
 // Get all pending requests for the logged-in user
 export const getPendingRequests = async (req, res) => {
   try {
+    console.log("idddd:",req.user.id)
     const requests = await Connection.find({
       recipient: req.user.id,
       status: "pending"
     }).populate("requester", "name email  location about skills")
     ;
+    console.log(requests)
     res.json(requests);
   } catch (error) {
     res.status(500).json({ error: error.message });

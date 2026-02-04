@@ -22,14 +22,14 @@ function App() {
 
   if (isAuthenticated === null) {
     // While checking auth status
-    return <div className="text-center mt-20">Loading...</div>;
+    return <div className="loading-center">Loading...</div>;
   }
 
   return (
     <div className="min-h-screen bg-gray-50">
       {isAuthenticated && <Header setActiveTab={setActiveTab} activeTab={activeTab} setIsAuthenticated={setIsAuthenticated}  />}
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+      <main className="main-container">
         <Routes>
           <Route path="/" element={isAuthenticated ? <Home /> : <Navigate to="/login" />} />
           <Route path="/network" element={isAuthenticated ? <Network /> : <Navigate to="/login" />} />

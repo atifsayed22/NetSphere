@@ -2,64 +2,72 @@ import React from "react";
 
 const AuthForm = ({ isSignup, formData, setFormData, handleSubmit, toggleAuth }) => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
+    <div className="auth-container">
 
-    <form onSubmit={handleSubmit} className="space-y-4 w-full max-w-md mx-auto">
+    <form onSubmit={handleSubmit} className="auth-form">
       {isSignup && (
         <>
-          <input
-            type="text"
-            name="name"
-            placeholder="Name"
-            value={formData.name}
-            onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-            className="w-full p-2 border rounded"
-            required
-          />
+          <div className="auth-input-group">
+            <input
+              type="text"
+              name="name"
+              placeholder="Name"
+              value={formData.name}
+              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+              className="auth-input"
+              required
+            />
+          </div>
         </>
       )}
 
-      <input
-        type="email"
-        name="email"
-        placeholder="Email"
-        value={formData.email}
-        onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-        className="w-full p-2 border rounded"
-        required
-      />
+      <div className="auth-input-group">
+        <input
+          type="email"
+          name="email"
+          placeholder="Email"
+          value={formData.email}
+          onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+          className="auth-input"
+          required
+        />
+      </div>
 
-      <input
-        type="password"
-        name="password"
-        placeholder="Password"
-        value={formData.password}
-        onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-        className="w-full p-2 border rounded"
-        required
-      />
+      <div className="auth-input-group">
+        <input
+          type="password"
+          name="password"
+          placeholder="Password"
+          value={formData.password}
+          onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+          className="auth-input"
+          required
+        />
+      </div>
 
       {isSignup && (
-        <input
-          type="text"
-          name="bio"
-          placeholder="Short Bio"
-          value={formData.bio}
-          onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
-          className="w-full p-2 border rounded"
-        />
+        <div className="auth-input-group">
+          <input
+            type="text"
+            name="bio"
+            placeholder="Short Bio"
+            value={formData.bio}
+            onChange={(e) => setFormData({ ...formData, bio: e.target.value })}
+            className="auth-input"
+          />
+        </div>
       )}
 
       <button
         type="submit"
-        className="w-full bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
+        className="auth-submit-btn"
       >
         {isSignup ? "Sign Up" : "Login"}
       </button>
 
-      <p className="text-sm text-center mt-2">
+      <p className="auth-link-text">
         {isSignup ? "Already have an account?" : "Don't have an account?"}
-        <button type="button" onClick={toggleAuth} className="text-blue-500 underline ml-1">
+        <button type="button" onClick={toggleAuth} className="auth-link">
           {isSignup ? "Login" : "Sign Up"}
         </button>
       </p>

@@ -7,64 +7,116 @@ import BASE_URL from "../config";
 const Home = () => {
   const [posts, setPosts] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [page, setPage] = useState(1);
+  const [hasMore, setHasMore] = useState(true);
 
-  const fetchPosts = async () => {
+  const fetchPosts = async (pageNum = 1, append = false) => {
     try {
-      const res = await axios.get(`${BASE_URL}/api/posts`);
-      setPosts(res.data);
+      if (append) {
+        setLoadingMore(true);
+      } else {
+        setLoading(true);
+      }
+      
+      const res = await axios.get(`${BASE_URL}/api/posts?page=${pageNum}&limit=5`);
+      const { posts: newPosts, hasMore: moreAvailable } = res.data;
+      
+      if (append) {
+        setPosts(prev => [...prev, ...newPosts]);
+      } else {
+        setPosts(newPosts);
+      }
+      
+      setHasMore(moreAvailable);
+      setPage(pageNum);
     } catch (error) {
       console.error('Error fetching posts:', error);
     } finally {
       setLoading(false);
+      setLoadingMore(false);
     }
   };
 
   useEffect(() => {
-    fetchPosts();
-  }, []); // ✅ fixed infinite loop issue
+    fetchPosts(1, false);
+  }, []);
 
-  // Refresh posts after creating a new one
+  // Refresh posts after creating a new one (reset to page 1)
   const handlePostCreated = () => {
-    fetchPosts();
+    fetchPosts(1, false);
+  };
+
+  const handleLoadMore = () => {
+    if (!loadingMore && hasMore) {
+      fetchPosts(page + 1, true);
+    }
+  };
+
+  // Handle post deletion from feed
+  const handlePostDelete = (postId) => {
+    setPosts((prev) => prev.filter((p) => p._id !== postId));
   };
 
   if (loading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh]">
-        <div className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-blue-500"></div>
-        <p className="mt-4 text-gray-500 text-sm">Fetching latest posts...</p>
+      <div className="loading-container">
+        <div className="spinner"></div>
+        <p className="loading-text">Fetching latest posts...</p>
       </div>
     );
   }
 
   return (
-    <div className="max-w-2xl mx-auto px-4">
+    <div className="home-container">
       {/* Create Post Section */}
-      <div className="sticky top-0 z-10 bg-white shadow-sm p-4 rounded-xl border border-gray-200 mb-6">
+      <div className="create-post-section">
         <CreatePost onPostCreated={handlePostCreated} />
       </div>
 
       {/* Posts List */}
-      <div className="space-y-4">
+      <div className="posts-list">
         {posts.length === 0 ? (
-          <div className="text-center text-gray-500 py-10">
-            <p className="text-lg font-medium">No posts yet 😔</p>
-            <p className="text-sm">Be the first to share something!</p>
+          <div className="empty-posts">
+            <p className="empty-posts-title">No posts yet 😔</p>
+            <p className="empty-posts-subtitle">Be the first to share something!</p>
           </div>
         ) : (
           posts.map((post, index) => (
             <div
               key={post._id || post.id}
-              className="transition-all duration-300 ease-in-out transform hover:scale-[1.01] hover:shadow-lg rounded-xl"
+              className="post-wrapper"
               style={{ animation: `fadeInUp 0.3s ease ${index * 0.05}s both` }}
             >
-              <PostCard post={post} />
+              <PostCard post={post} onDelete={handlePostDelete} />
             </div>
           ))
         )}
       </div>
 
-      
+      {/* Load More Button */}
+      {hasMore && posts.length > 0 && (
+        <div className="load-more-container">
+          <button
+            onClick={handleLoadMore}
+            disabled={loadingMore}
+            className="load-more-btn"
+          >
+            {loadingMore ? (
+              <span className="load-more-content">
+                <div className="spinner-small"></div>
+                Loading...
+              </span>
+            ) : (
+              'Load More Posts'
+            )}
+          </button>
+        </div>
+      )}
+
+      {!hasMore && posts.length > 0 && (
+        <p className="end-message">You've reached the end!</p>
+      )}
     </div>
   );
 };

@@ -1,157 +1,129 @@
 // src/pages/RegisterPage.jsx
-import React from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import React, { useState } from "react";
 import axios from "axios";
+import BASE_URL from "../config";
 import { useNavigate } from "react-router-dom";
-import { FiUser, FiMail, FiLock, FiPlusCircle, FiBook, FiBriefcase, FiInfo } from "react-icons/fi";
+import { FiUser, FiMail, FiLock } from "react-icons/fi";
 
 const RegisterPage = () => {
-  const {
-    register,
-    handleSubmit,
-    reset,
-    control,
-    formState: { isSubmitting },
-  } = useForm({
-    defaultValues: {
-      skills: [""],
-      education: [{ school: "", degree: "", fieldOfStudy: "", startYear: "", endYear: "" }],
-      experience: [{ position: "", company: "", duration: "" }],
-    },
+  const [formData, setFormData] = useState({
+    name: "",
+    email: "",
+    password: "",
   });
-
-  const { fields: skillFields, append: addSkill } = useFieldArray({ control, name: "skills" });
-  const { fields: eduFields, append: addEdu } = useFieldArray({ control, name: "education" });
-  const { fields: expFields, append: addExp } = useFieldArray({ control, name: "experience" });
-
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
+  const [success, setSuccess] = useState("");
   const navigate = useNavigate();
-  const [error, setError] = React.useState("");
-  const [success, setSuccess] = React.useState("");
 
-  const onSubmit = async (data) => {
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
     setError("");
     setSuccess("");
+    setIsSubmitting(true);
+
     try {
-      const res = await axios.post(`${BASE_URL}/api/auth/register`, data);
+      const res = await axios.post(`${BASE_URL}/api/auth/register`, formData);
       if (res.status === 201 || res.data.success) {
         setSuccess("✅ Account created! Redirecting to login...");
-        reset();
+        setFormData({ name: "", email: "", password: "" });
         setTimeout(() => navigate("/login"), 2000);
       } else {
         setError("❌ Something went wrong. Try again.");
       }
     } catch (err) {
+      console.log(err);
       const message = err.response?.data?.message || "❌ Registration failed";
       setError(message);
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gradient-to-br from-gray-900 via-black to-gray-800 px-4 overflow-y-auto py-10">
-      <div className="w-full max-w-md bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-white/20">
+    <div className="auth-container">
+      <div className="auth-card">
         {/* Title */}
-        <h2 className="text-4xl font-bold text-center text-white mb-2">
+        <h2 className="auth-title">
           Create Account ✨
         </h2>
-        <p className="text-center text-white/70 mb-6 text-sm">
+        <p className="auth-subtitle">
           Fill in your details to get started
         </p>
 
         {/* Error/Success */}
         {error && (
-          <p className="bg-red-500/20 text-red-300 border border-red-400/30 p-2 rounded-md text-sm text-center mb-4">
+          <p className="auth-error">
             {error}
           </p>
         )}
         {success && (
-          <p className="bg-green-500/20 text-green-300 border border-green-400/30 p-2 rounded-md text-sm text-center mb-4">
+          <p className="auth-success">
             {success}
           </p>
         )}
 
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5">
+        <form onSubmit={handleSubmit} className="auth-form">
           {/* Name */}
-          <div className="flex items-center bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white">
-            <FiUser className="mr-3 opacity-70" />
-            <input {...register("name")} placeholder="Full Name" className="bg-transparent outline-none w-full placeholder-white/60" required />
+          <div className="auth-input-group">
+            <FiUser className="auth-input-icon" />
+            <input
+              name="name"
+              value={formData.name}
+              onChange={handleChange}
+              placeholder="Full Name"
+              className="auth-input"
+              required
+            />
           </div>
 
           {/* Email */}
-          <div className="flex items-center bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white">
-            <FiMail className="mr-3 opacity-70" />
-            <input {...register("email")} type="email" placeholder="Email" className="bg-transparent outline-none w-full placeholder-white/60" required />
+          <div className="auth-input-group">
+            <FiMail className="auth-input-icon" />
+            <input
+              name="email"
+              type="email"
+              value={formData.email}
+              onChange={handleChange}
+              placeholder="Email"
+              className="auth-input"
+              required
+            />
           </div>
 
           {/* Password */}
-          <div className="flex items-center bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white">
-            <FiLock className="mr-3 opacity-70" />
-            <input {...register("password")} type="password" placeholder="Password" className="bg-transparent outline-none w-full placeholder-white/60" required />
-          </div>
-
-          {/* About */}
-          <div className="flex items-start bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white">
-            <FiInfo className="mr-3 opacity-70 mt-1" />
-            <textarea {...register("about")} placeholder="About you" className="bg-transparent outline-none w-full placeholder-white/60 resize-none" />
-          </div>
-
-          {/* Skills */}
-          <div>
-            <label className="block font-semibold mb-2 text-white/80">Skills</label>
-            {skillFields.map((_, index) => (
-              <input key={index} {...register(`skills.${index}`)} placeholder="Skill" className="w-full bg-white/10 border border-white/20 rounded-lg px-4 py-2 text-white placeholder-white/60 mb-2" />
-            ))}
-            <button type="button" onClick={() => addSkill("")} className="flex items-center text-blue-400 hover:text-blue-300 text-sm font-medium">
-              <FiPlusCircle className="mr-1" /> Add Skill
-            </button>
-          </div>
-
-          {/* Education */}
-          <div>
-            <label className="block font-semibold mb-2 text-white/80">Education</label>
-            {eduFields.map((_, index) => (
-              <div key={index} className="space-y-2 mb-3">
-                <input {...register(`education.${index}.school`)} placeholder="School" className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-white/60" />
-                <input {...register(`education.${index}.degree`)} placeholder="Degree" className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-white/60" />
-                <input {...register(`education.${index}.fieldOfStudy`)} placeholder="Field of Study" className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-white/60" />
-                <input {...register(`education.${index}.startYear`)} placeholder="Start Year" className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-white/60" />
-                <input {...register(`education.${index}.endYear`)} placeholder="End Year" className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-white/60" />
-              </div>
-            ))}
-            <button type="button" onClick={() => addEdu({})} className="flex items-center text-blue-400 hover:text-blue-300 text-sm font-medium">
-              <FiPlusCircle className="mr-1" /> Add Education
-            </button>
-          </div>
-
-          {/* Experience */}
-          <div>
-            <label className="block font-semibold mb-2 text-white/80">Experience</label>
-            {expFields.map((_, index) => (
-              <div key={index} className="space-y-2 mb-3">
-                <input {...register(`experience.${index}.position`)} placeholder="Position" className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-white/60" />
-                <input {...register(`experience.${index}.company`)} placeholder="Company" className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-white/60" />
-                <input {...register(`experience.${index}.duration`)} placeholder="Duration" className="w-full bg-white/10 border border-white/20 rounded-lg px-3 py-2 text-white placeholder-white/60" />
-              </div>
-            ))}
-            <button type="button" onClick={() => addExp({})} className="flex items-center text-blue-400 hover:text-blue-300 text-sm font-medium">
-              <FiPlusCircle className="mr-1" /> Add Experience
-            </button>
+          <div className="auth-input-group">
+            <FiLock className="auth-input-icon" />
+            <input
+              name="password"
+              type="password"
+              value={formData.password}
+              onChange={handleChange}
+              placeholder="Password"
+              className="auth-input"
+              required
+            />
           </div>
 
           {/* Submit */}
           <button
             type="submit"
             disabled={isSubmitting}
-            className="w-full bg-gradient-to-r from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600 disabled:opacity-50 transition-all text-white font-semibold py-2 rounded-lg shadow-lg"
+            className="auth-submit-btn"
           >
             {isSubmitting ? "Registering..." : "Register"}
           </button>
         </form>
 
         {/* Login Link */}
-        <p className="text-center text-white/80 mt-6 text-sm">
+        <p className="auth-link-text">
           Already have an account?{" "}
           <span
-            className="text-yellow-300 font-semibold hover:underline cursor-pointer"
+            className="auth-link"
             onClick={() => navigate("/login")}
           >
             Log in

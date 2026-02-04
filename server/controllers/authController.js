@@ -34,14 +34,15 @@ export const register = async (req, res) => {
   }
 };
 export const login = async(req,res)=>{
+  try {
     const {email, password} = req.body
 
     const user  = await User.findOne({email})
     if(!user) return res.status(404).json({message:"User not Found "})
 
-    const isMatch = bcrypt.compare(password,user.password)
+    const isMatch = await bcrypt.compare(password,user.password)
 
-    if(!isMatch) return res.status(404).json({message:"Invalid Credential"})
+    if(!isMatch) return res.status(401).json({message:"Invalid Credential"})
 
 
     // generate jwt(jason web token )
@@ -57,5 +58,9 @@ export const login = async(req,res)=>{
         email: user.email,
       },
     });
+  } catch (error) {
+    console.error("Error in login:", error);
+    return res.status(500).json({ message: "Server error" });
+  }
         
 }

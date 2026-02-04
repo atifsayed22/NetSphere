@@ -21,6 +21,7 @@ app.use(cors({
     origin: [
       "http://localhost:5173",
       "https://net-sphere-sfar.vercel.app",
+      "https://net-sphere-xfwp.vercel.app",
       "https://net-sphere-xfwp-git-main-sayedatif4321-1267s-projects.vercel.app"
     ],
     credentials: true
